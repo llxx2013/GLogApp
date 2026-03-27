@@ -105,6 +105,7 @@ jobs:
         run: |
           Expand-Archive ${{ env.TARGET_PATH }} -DestinationPath C:\QtCustom
           echo "C:\QtCustom\bin" >> $GITHUB_PATH
+          echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
           ls "C:\ProgramData\chocolatey\lib\winflexbison3\tools\"
           ls "C:\Program Files (x86)\NSIS"
           ls "C:\ProgramData\chocolatey\lib\nsis"
