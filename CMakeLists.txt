@@ -148,15 +148,7 @@ endif()
 
 qt_add_executable(${PROJECT_NAME} ${ROOT_DIR}/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} 
-    PRIVATE 
-        ${PROJECT_SHARED}
-        Qt6::Widgets
-        Qt6::Network
-        Qt6::SvgWidgets
-        Qt6::OpenGLWidgets
-        Qt6::Sql
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_SHARED})
 
 if (WIN32)
     set_target_properties(${PROJECT_NAME}
@@ -190,11 +182,6 @@ if(FORCE_OPENSSL)
     message(STATUS "Pass -force-openssl for deployment")
 endif()
 
-if(WIN32)
-    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
-    include(InstallRequiredSystemLibraries)
-endif()
-
 if(APPLE)
     install(TARGETS ${PROJECT_NAME}
         BUNDLE DESTINATION .
@@ -208,6 +195,12 @@ else()
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
+endif()
+
+if(WIN32)
+    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+    include(InstallRequiredSystemLibraries)
+    list(APPEND deploy_extra_options "${CMAKE_INSTALL_BINDIR}/${PROJECT_SHARED}.dll")
 endif()
 
 qt_generate_deploy_app_script(
