@@ -117,11 +117,13 @@ jobs:
       - name: Configure CMake
         shell: cmd
         run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
           call C:\QtCustom\bin\qt-cmake.bat -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DFLEX_INCLUDE_DIRS="C:\ProgramData\chocolatey\lib\winflexbison3\tools"
 
       - name: Build & Test
-        shell: pwsh
+        shell: cmd
         run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
           cmake --build build --config Release --parallel
           cd build
           ctest -C Release --output-on-failure --verbose
