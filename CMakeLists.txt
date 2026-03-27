@@ -148,7 +148,15 @@ endif()
 
 qt_add_executable(${PROJECT_NAME} ${ROOT_DIR}/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_SHARED})
+target_link_libraries(${PROJECT_NAME} 
+    PRIVATE 
+        ${PROJECT_SHARED}
+        Qt6::Widgets
+        Qt6::Network
+        Qt6::SvgWidgets
+        Qt6::OpenGLWidgets
+        Qt6::Sql
+)
 
 if (WIN32)
     set_target_properties(${PROJECT_NAME}
