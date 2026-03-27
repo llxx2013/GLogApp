@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install Tools
-        run: choco install winflexbison3 -y
+        run: choco install winflexbison3 nsis -y
 
       - name: Cache Downloaded File
         uses: actions/cache@v4
@@ -131,14 +131,6 @@ jobs:
       - name: Generate and Compile NSIS Installer
         shell: pwsh
         run: |
-          $nsisPath = "C:\Program Files (x86)\NSIS"
-          if (Test-Path $nsisPath) {
-              $env:PATH += ";$nsisPath"
-          } else {
-              Write-Error "NSIS not found at $nsisPath"
-              exit 1
-          }
-
           $version = "${{ github.ref_name }}"
           $exeName = "GLog-$version-Installer-x64.exe"
 
@@ -162,7 +154,7 @@ jobs:
             SetOutPath "`$INSTDIR"
             File /r "C:\AppDir\*"
             
-            CreateShortCut "`$SMPROGRAMS\GLog.lnk" "`$INSTDIR\GLog.exe"
+            CreateShortCut "`$SMPROGRAMS\GLog.lnk" "`$INSTDIR\bin\GLog.exe"
             
             WriteUninstaller "`$INSTDIR\Uninstall.exe"
           SectionEnd
