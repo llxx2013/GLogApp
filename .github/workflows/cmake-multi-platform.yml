@@ -24,7 +24,10 @@ jobs:
 
       - name: Build & Test
         run: |
-          . $ENABLE_GCC_TOOLSET && qt-cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          . $ENABLE_GCC_TOOLSET && qt-cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_INSTALL_LIBDIR=lib
           . $ENABLE_GCC_TOOLSET && cmake --build build
           QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure --verbose
 
@@ -39,15 +42,24 @@ jobs:
             -d $PWD/linux-deploy/GLog.desktop \
             -e $PWD/AppDir/usr/bin/GLog \
             -i $PWD/linux-deploy/GLog.png \
-            --plugin=qt --output appimage
+            --plugin=qt
+
           echo "--- AppDir Structure ---"
           tree $PWD/AppDir -L 4
+
+          VERSION=${{ github.ref_name }} linuxdeploy --appdir $PWD/AppDir --output appimage
+
+          APPIMAGE_BIN=$(ls GLog-*.AppImage | head -n 1)
+          TAR_NAME="${APPIMAGE_BIN%.AppImage}.tar.xz"
+          tar -cJf "$TAR_NAME" -C "$PWD/AppDir" .
 
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AppImage-Linux
-          path: ./*.AppImage
+          path: |
+            ./*.AppImage
+            ./*.tar.xz
 
   build-windows:
     runs-on: windows-latest
@@ -146,16 +158,11 @@ jobs:
 
       - name: Install & Deploy
         run: |
-          sudo mkdir -p /usr/local/lib
-          REAL_DYLIB=$(find build -name "libGLogCore.dylib" -type f | head -n 1)
-          sudo cp "$REAL_DYLIB" /usr/local/lib/libmimerapi.dylib
           cmake --install build --config Release --prefix deploy_out
+          find deploy_out -name "libqsqlmimer.dylib" -delete
+          
           APP_PATH=$(find deploy_out -name "*.app" -type d -maxdepth 3 | head -n 1)
           echo "Found App Bundle: $APP_PATH"
-          SQL_DIR="$APP_PATH/Contents/PlugIns/sqldrivers"
-          echo "Removing unused SQL drivers..."
-          rm -f "$SQL_DIR/libqsqlmimer.dylib"
-          rm -f "$APP_PATH/Contents/Frameworks/libmimerapi.dylib"
           if ! command -v tree &> /dev/null; then
             brew install tree
           fi
@@ -191,6 +198,7 @@ jobs:
             ./artifacts/*.AppImage
             ./artifacts/*.zip
             ./artifacts/*.dmg
+            ./artifacts/*.tar.xz
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'dev') }}
           generate_release_notes: true
         env:

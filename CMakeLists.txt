@@ -195,9 +195,10 @@ if(APPLE)
         LIBRARY DESTINATION ${PROJECT_NAME}.app/Contents/Frameworks
     )
 else()
+    include(GNUInstallDirs)
     install(TARGETS ${PROJECT_NAME} ${PROJECT_SHARED}
-        BUNDLE  DESTINATION .
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif()
 
