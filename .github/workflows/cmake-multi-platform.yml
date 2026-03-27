@@ -126,47 +126,47 @@ jobs:
           cd build
           ctest -C Release --output-on-failure --verbose
 
-      - name: Install & Compress
-        shell: pwsh
+      - name: Install, Compress and Generate NSIS
+        shell: cmd
         run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+
           cmake --install build --prefix C:/AppDir
-          echo "--- AppDir Structure ---"
-          Get-ChildItem -Path C:/AppDir -Recurse -Depth 3 | Select-Object FullName
-          $fileName = "GLog-${{ github.ref_name }}-windows-x64.zip"
-          Compress-Archive -Path C:/AppDir/* -DestinationPath $fileName
+          echo --- AppDir Structure ---
+          dir /s C:\AppDir
 
-      - name: Generate and Compile NSIS Installer
-        shell: pwsh
-        run: |
-          $version = "${{ github.ref_name }}"
-          $exeName = "GLog-$version-Installer-x64.exe"
+          set "VERSION=${{ github.ref_name }}"
+          set "ZIP_NAME=GLog-%VERSION%-windows-x64.zip"
+          set "EXE_NAME=GLog-%VERSION%-Installer-x64.exe"
 
-          $nsiContent = @"
-          !include "MUI2.nsh"
-          Name "GLog $version"
-          OutFile "$exeName"
-          InstallDir "`$PROGRAMFILES64\GLog"
-          RequestExecutionLevel admin
-          !insertmacro MUI_PAGE_WELCOME
-          !insertmacro MUI_PAGE_DIRECTORY
-          !insertmacro MUI_PAGE_INSTFILES
-          !insertmacro MUI_PAGE_FINISH
-          !insertmacro MUI_UNPAGE_CONFIRM
-          !insertmacro MUI_UNPAGE_INSTFILES
-          !insertmacro MUI_LANGUAGE "English"
-          Section "MainSection" SEC01
-            SetOutPath "`$INSTDIR"
-            File /r "C:\AppDir\*"
-            CreateShortCut "`$SMPROGRAMS\GLog.lnk" "`$INSTDIR\bin\GLog.exe"
-            WriteUninstaller "`$INSTDIR\Uninstall.exe"
-          SectionEnd
-          Section "Uninstall"
-            Delete "`$SMPROGRAMS\GLog.lnk"
-            RMDir /r "`$INSTDIR"
-          SectionEnd
-          "@
-          $nsiContent | Out-File -FilePath installer.nsi -Encoding utf8
-          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+          powershell -Command "Compress-Archive -Path C:\AppDir\* -DestinationPath %ZIP_NAME% -Force"
+
+          (
+            echo !include "MUI2.nsh"
+            echo Name "GLog %VERSION%"
+            echo OutFile "%EXE_NAME%"
+            echo InstallDir "$PROGRAMFILES64\GLog"
+            echo RequestExecutionLevel admin
+            echo !insertmacro MUI_PAGE_WELCOME
+            echo !insertmacro MUI_PAGE_DIRECTORY
+            echo !insertmacro MUI_PAGE_INSTFILES
+            echo !insertmacro MUI_PAGE_FINISH
+            echo !insertmacro MUI_UNPAGE_CONFIRM
+            echo !insertmacro MUI_UNPAGE_INSTFILES
+            echo !insertmacro MUI_LANGUAGE "English"
+            echo Section "MainSection" SEC01
+            echo   SetOutPath "$INSTDIR"
+            echo   File /r "C:\AppDir\*"
+            echo   CreateShortCut "$SMPROGRAMS\GLog.lnk" "$INSTDIR\bin\GLog.exe"
+            echo   WriteUninstaller "$INSTDIR\Uninstall.exe"
+            echo SectionEnd
+            echo Section "Uninstall"
+            echo   Delete "$SMPROGRAMS\GLog.lnk"
+            echo   RMDir /r "$INSTDIR"
+            echo SectionEnd
+          ) > installer.nsi
+
+          "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v7
