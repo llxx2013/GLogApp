@@ -44,6 +44,20 @@ jobs:
             -i $PWD/linux-deploy/GLog.png \
             --plugin=qt
 
+          echo "Processing translations..."
+          TRANS_DIR="$PWD/AppDir/usr/translations"
+          if [ -d "$TRANS_DIR" ]; then
+            pushd "$TRANS_DIR"
+            for base_file in qtbase_*.qm; do
+              if [ -f "$base_file" ]; then
+                target_file="${base_file/qtbase_/qt_}"
+                echo "Linking $target_file -> $base_file"
+                ln -sf "$base_file" "$target_file"
+              fi
+            done
+            popd
+          fi
+
           echo "--- AppDir Structure ---"
           tree $PWD/AppDir -L 4
 
