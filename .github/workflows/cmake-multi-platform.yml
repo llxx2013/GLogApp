@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -68,12 +71,13 @@ jobs:
           tar -cJf "$TAR_NAME" -C "$PWD/AppDir" .
 
       - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Linux-Deploy
           path: |
             ./*.AppImage
             ./*.tar.xz
+          compression-level: 0
 
   build-windows:
     runs-on: windows-latest
@@ -87,7 +91,7 @@ jobs:
         run: choco install winflexbison3 nsis -y
 
       - name: Cache Downloaded File
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-download
         with:
           path: ${{ env.TARGET_PATH }}
@@ -165,7 +169,7 @@ jobs:
           & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
 
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Windows-Deploy
           path: |
@@ -224,7 +228,7 @@ jobs:
           hdiutil create -volname "GLog" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_NAME"
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MacOS-Deploy
           path: ./*.dmg
@@ -238,7 +242,7 @@ jobs:
       contents: write
     steps:
       - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts/
           merge-multiple: true
