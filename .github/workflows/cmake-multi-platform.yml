@@ -139,12 +139,10 @@ jobs:
 
           $nsiContent = @"
           !include "MUI2.nsh"
-          
           Name "GLog $version"
           OutFile "$exeName"
           InstallDir "`$PROGRAMFILES64\GLog"
           RequestExecutionLevel admin
-
           !insertmacro MUI_PAGE_WELCOME
           !insertmacro MUI_PAGE_DIRECTORY
           !insertmacro MUI_PAGE_INSTFILES
@@ -152,25 +150,19 @@ jobs:
           !insertmacro MUI_UNPAGE_CONFIRM
           !insertmacro MUI_UNPAGE_INSTFILES
           !insertmacro MUI_LANGUAGE "English"
-
           Section "MainSection" SEC01
             SetOutPath "`$INSTDIR"
             File /r "C:\AppDir\*"
-            
             CreateShortCut "`$SMPROGRAMS\GLog.lnk" "`$INSTDIR\bin\GLog.exe"
-            
             WriteUninstaller "`$INSTDIR\Uninstall.exe"
           SectionEnd
-
           Section "Uninstall"
             Delete "`$SMPROGRAMS\GLog.lnk"
             RMDir /r "`$INSTDIR"
           SectionEnd
           "@
-
           $nsiContent | Out-File -FilePath installer.nsi -Encoding utf8
-          
-          makensis installer.nsi
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
